@@ -4,7 +4,7 @@
   "main": "observacoes.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon observacoes.js"
+    "start": "node observacoes.js"
   },
   "keywords": [],
   "author": "",
