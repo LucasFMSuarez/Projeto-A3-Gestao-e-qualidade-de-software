@@ -1,20 +1,43 @@
 const express = require("express");
-const { criarLembrete, listarLembretes } = require("./servicoLembretes");
+const { criarLembrete, listarLembretes, processarEvento } = require("./servicoLembretes");
 
 const router = express.Router();
 
-router.get("/lembretes", (req, res) => {
-  res.send(listarLembretes());
+// Lista todos os lembretes
+router.get("/lembretes", async (req, res) => {
+  try {
+    const lista = await listarLembretes();
+    res.send(lista);
+  } catch (err) {
+    console.error("Erro ao listar lembretes:", err);
+    res.status(500).send({ erro: "Erro ao listar lembretes." });
+  }
 });
 
+// Cria um novo lembrete
 router.put("/lembretes", async (req, res) => {
-  const lembrete = await criarLembrete(req.body.texto);
-  res.status(201).send(lembrete);
+  try {
+    const lembrete = await criarLembrete(req.body.texto);
+    res.status(201).send(lembrete);
+  } catch (err) {
+    console.error("Erro ao criar lembrete:", err);
+    res.status(500).send({ erro: "Erro ao criar lembrete." });
+  }
 });
 
-router.post("/eventos", (req, res) => {
-  console.log(req.body);
-  res.status(200).send({ msg: "ok" });
+// Recebe eventos do barramento
+router.post("/eventos", async (req, res) => {
+  const { tipo, dados } = req.body;
+
+  console.log("📥 Lembretes recebeu evento:", tipo, dados);
+
+  try {
+    processarEvento(tipo, dados);
+    res.status(200).send({ msg: "ok" });
+  } catch (err) {
+    console.error("Erro ao processar evento:", err);
+    res.status(500).send({ erro: "Erro ao processar evento." });
+  }
 });
 
 module.exports = router;

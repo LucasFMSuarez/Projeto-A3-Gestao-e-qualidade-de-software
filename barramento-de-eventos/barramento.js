@@ -1,45 +1,52 @@
 const express = require('express');
-const bodyParser = require('body-parser');
-//para enviar eventos para os demais microsserviços
 const axios = require('axios');
-eventos = []
 
 const app = express();
-app.use(bodyParser.json());
-app.post('/eventos', (req, res) => {
-const evento = req.body;
-eventos.push(evento)
+app.use(express.json());
 
-//envia o evento para o microsserviço de lembretes
-axios.post('http://localhost:4000/eventos', evento);
-//envia o evento para o microsserviço de observações
-axios.post('http://localhost:5000/eventos', evento);
-//envia o evento para o microsserviço de consulta
-//axios.post("http://localhost:6000/eventos", evento);
-//envia o evento para o microsservico de classificacao
-postEventoConsulta(evento);
+let eventos = [];
 
-async function postEventoConsulta(evento) {
-    const url = "http://localhost:6000/eventos"; 
-    const timeout = 5000; // Contagem em millisegundos
-
-    try {
-        await axios.post(url, evento, { timeout });
-    } catch (error) {
-        // Ignore todos os erros
-        
-    }
+// Função para enviar eventos para qualquer URL
+async function enviarEvento(url, evento) {
+  try {
+    await axios.post(url, evento, {
+      headers: { 'Content-Type': 'application/json' },
+      timeout: 5000
+    });
+  } catch (error) {
+    console.error(`Erro enviando evento para ${url}: ${error.message}`);
+    // Ignora o erro para não quebrar o barramento
+  }
 }
 
-axios.post("http://localhost:7000/eventos", evento);
-res.status(200).send({ msg: "ok" });
+app.post('/eventos', async (req, res) => {
+  const evento = req.body;
+  
+   // IGNORA eventos vazios
+  if (!evento || !evento.tipo) {
+    console.log("Evento inválido recebido:", evento);
+    return res.status(400).send({ erro: "Evento inválido: faltando 'tipo'" });
+  }
+  console.log("✅ Evento recebido:", evento);
+  eventos.push(evento);
+
+
+  // Envia o evento para todos os microsserviços
+ try {
+    await axios.post("http://localhost:4000/eventos", evento);
+    await axios.post("http://localhost:5000/eventos", evento);
+    await axios.post("http://localhost:6000/eventos", evento);
+    await axios.post("http://localhost:7000/eventos", evento);
+  } catch (error) {
+    console.log("Erro enviando evento:", error.message);
+  }
+  res.status(200).send({ msg: 'ok' });
 });
 
 app.get('/eventos', (req, res) => {
-res.send(eventos)})
-    
+  res.send(eventos);
+});
 
 app.listen(10000, () => {
-console.log('Barramento de eventos. Porta 10000.')
-console.log(eventos);
-})
+  console.log('Barramento de eventos rodando na porta 10000.');
+});

@@ -1,59 +1,59 @@
-// src/servicoObservacoes.js
-const { v4: uuidv4 } = require("uuid");
+const Observacao = require("../../banco/ObservacaoModel");
 const { enviarEvento } = require("./distribuidorEventos");
+const { v4: uuidv4 } = require("uuid");
 
-// Armazena as observações agrupadas pelo ID do lembrete
-const observacoesPorLembreteId = {};
+async function criarObservacao(lembreteId, texto) {
+  const id = uuidv4();
 
+  const nova = await Observacao.create({
+    id,
+    texto,
+    lembreteId,
+    status: "aguardando"
+  });
+
+  await enviarEvento("ObservacaoCriada", {
+    id,
+    texto,
+    lembreteId,
+    status: "aguardando",
+  });
+
+  return await listarObservacoes(lembreteId);
+}
+
+async function listarObservacoes(lembreteId) {
+  return await Observacao.find({ lembreteId });
+}
+
+async function atualizarStatusObservacao(id, status) {
+  const obs = await Observacao.findOne({ id });
+  if (!obs) return;
+
+  obs.status = status;
+  await obs.save();
+
+  await enviarEvento("ObservacaoAtualizada", {
+    id: obs.id,
+    texto: obs.texto,
+    lembreteId: obs.lembreteId,
+    status: obs.status,
+  });
+}
 
 const funcoes = {
-  ObservacaoClassificada: (observacao) => {
-    const observacoes = observacoesPorLembreteId[observacao.lembreteId];
-    if (!observacoes) return;
-
-    const obsParaAtualizar = observacoes.find(o => o.id === observacao.id);
-    if (!obsParaAtualizar) return;
-
-    obsParaAtualizar.status = observacao.status;
-
-    enviarEvento({
-      tipo: "ObservacaoAtualizada",
-      dados: {
-        id: observacao.id,
-        texto: observacao.texto,
-        lembreteId: observacao.lembreteId,
-        status: observacao.status
-      }
-    });
+  ObservacaoClassificada: async (observacao) => {
+    await atualizarStatusObservacao(observacao.id, observacao.status);
   }
 };
 
-// Cria uma nova observação
-async function criarObservacao(lembreteId, texto) {
-  const idObs = uuidv4();
-  const observacoesDoLembrete = observacoesPorLembreteId[lembreteId] || [];
-
-  const novaObservacao = { id: idObs, texto, status: "aguardando" };
-  observacoesDoLembrete.push(novaObservacao);
-  observacoesPorLembreteId[lembreteId] = observacoesDoLembrete;
-
-  await enviarEvento({
-    tipo: "ObservacaoCriada",
-    dados: { id: idObs, texto, lembreteId, status: "aguardando" }
-  });
-
-  return observacoesDoLembrete;
-}
-
-// Lista observações de um lembrete
-function listarObservacoes(lembreteId) {
-  return observacoesPorLembreteId[lembreteId] || [];
-}
-
-// Processa evento recebido
 function processarEvento(tipo, dados) {
-  const funcao = funcoes[tipo];
-  if (funcao) funcao(dados);
+  const fn = funcoes[tipo];
+  if (fn) fn(dados);
 }
 
-module.exports = { observacoesPorLembreteId, criarObservacao, listarObservacoes, processarEvento };
+module.exports = {
+  criarObservacao,
+  listarObservacoes,
+  processarEvento
+};

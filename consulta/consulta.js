@@ -1,56 +1,91 @@
 const express = require("express");
 const axios = require("axios");
+const mongoose = require("mongoose");
+const Lembrete = require("../banco/lembreteModel");
+const Observacao = require("../banco/observacaoModel");
 
 const app = express();
 app.use(express.json());
 
+mongoose.connect("mongodb://localhost:27017/a3", {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+});
 
+// Retorna lembretes com suas observações
+app.get("/lembretes", async (req, res) => {
+  const lembretes = await Lembrete.find();
+  const resultado = {};
 
-baseConsulta = {};
+  for (const lembrete of lembretes) {
+    const observacoes = await Observacao.find({ lembreteId: lembrete.id });
 
-const funcoes = {
-    LembreteCriado: (lembrete) => {
-    baseConsulta[lembrete.contador] = lembrete;
-    },
-    ObservacaoCriada: (observacao) => {
-    const observacoes =
-    baseConsulta[observacao.lembreteId]["observacoes"] ||
-    [];
-    observacoes.push(observacao);
-    baseConsulta[observacao.lembreteId]["observacoes"] =
-    observacoes;
-    },
-    
-    ObservacaoAtualizada: (observacao) => {
-     const observacoes = baseConsulta[observacao.lembreteId]["observacoes"];
-     const indice = observacoes.findIndex((o) => o.id === observacao.id);
-     observacoes[indice] = observacao;
-     },
+    resultado[lembrete.id] = {
+      id: lembrete.id,
+      texto: lembrete.texto,
+      status: lembrete.status,
+      observacoes
     };
-    
+  }
 
-
-app.get("/lembretes", (req, res) => {
- res.status(200).send(baseConsulta);
- });
-        
-app.post("/eventos", (req, res) => {
-    try {
-    funcoes[req.body.tipo](req.body.dados);
-    } catch (err) {}
-    res.status(200).send({ msg: "ok" });
- });
-
- 
-app.listen(6000, async () => {
-console.log("Consultas. Porta 6000")
-const resp = await
-axios.get("http://localhost:10000/eventos");
-//axios entrega os dados na propriedade data
-resp.data.forEach((valor, indice, colecao) => {
-try {
-funcoes[valor.tipo](valor.dados);
-} catch (err) {}
-});
+  res.status(200).send(resultado);
 });
 
+// Recebe eventos e grava no banco
+const funcoes = {
+  LembreteCriado: async (dados) => {
+    await Lembrete.create({
+      id: dados.id,
+      texto: dados.texto,
+      status: dados.status
+    });
+    console.log("Consulta armazenou lembrete:", dados);
+  },
+
+  LembreteAtualizado: async (dados) => {
+    await Lembrete.findOneAndUpdate(
+      { id: dados.id },
+      { status: dados.status }
+    );
+    console.log("Consulta atualizou lembrete:", dados);
+  },
+
+  ObservacaoCriada: async (dados) => {
+    await Observacao.create({
+      id: dados.id,
+      texto: dados.texto,
+      status: dados.status,
+      lembreteId: dados.lembreteId
+    });
+    console.log("Consulta armazenou observação:", dados);
+  },
+
+  ObservacaoAtualizada: async (dados) => {
+    await Observacao.findOneAndUpdate(
+      { id: dados.id },
+      {
+        texto: dados.texto,
+        status: dados.status
+      }
+    );
+    console.log("Consulta atualizou observação:", dados);
+  }
+};
+
+app.post("/eventos", async (req, res) => {
+  console.log("Consulta recebeu evento:", req.body);
+
+  const { tipo, dados } = req.body;
+
+  try {
+    const fn = funcoes[tipo];
+    if (fn) await fn(dados);
+    else console.log("⚠ Consulta ignorou tipo:", tipo);
+  } catch (err) {
+    console.error("Erro ao processar evento na consulta:", err.message);
+  }
+
+  res.status(200).send({ msg: "ok" });
+});
+
+app.listen(6000, () => console.log("Consulta. Porta 6000"));

@@ -1,30 +1,54 @@
 // src/routes.js
 const express = require("express");
-const { criarObservacao, listarObservacoes, processarEvento } = require("./servicoObservacoes");
-
 const router = express.Router();
+const {
+  criarObservacao,
+  listarObservacoes,
+  processarEvento
+} = require("./servicoObservacoes");
 
-// Cria nova observação
+// Criar observação com PUT, igual ao serviço de lembretes
 router.put("/lembretes/:id/observacoes", async (req, res) => {
   try {
-    const observacoes = await criarObservacao(req.params.id, req.body.texto);
+    const { texto } = req.body;
+    if (!texto) {
+      return res.status(400).send({ erro: "O campo 'texto' é obrigatório." });
+    }
+
+    const observacoes = await criarObservacao(req.params.id, texto);
     res.status(201).send(observacoes);
-  } catch {
+  } catch (err) {
+    console.error("Erro ao criar observação:", err);
     res.status(500).send({ erro: "Erro ao criar observação." });
   }
 });
 
-// Lista observações
-router.get("/lembretes/:id/observacoes", (req, res) => {
-  const observacoes = listarObservacoes(req.params.id);
-  res.send(observacoes);
+// Listar observações
+router.get("/lembretes/:id/observacoes", async (req, res) => {
+  try {
+    const observacoes = await listarObservacoes(req.params.id);
+    res.send(observacoes);
+  } catch (err) {
+    console.error("Erro ao listar observações:", err);
+    res.status(500).send({ erro: "Erro ao listar observações." });
+  }
 });
 
-// Recebe eventos do barramento
-router.post("/eventos", (req, res) => {
-  const { tipo, dados } = req.body;
-  processarEvento(tipo, dados);
-  res.status(200).send({ msg: "ok" });
+// Receber eventos do barramento
+router.post("/eventos", async (req, res) => {
+  try {
+    const { tipo, dados } = req.body;
+     console.log("📥 Observações recebeu:", tipo, dados);
+    if (!tipo) {
+      return res.status(400).send({ erro: "Evento sem tipo" });
+    }
+
+    processarEvento(tipo, dados);
+    res.send({ msg: "ok" });
+  } catch (err) {
+    console.error("Erro ao processar evento:", err);
+    res.status(500).send({ erro: "Erro ao processar evento." });
+  }
 });
 
 module.exports = router;
