@@ -1,11 +1,11 @@
 // src/servicoObservacoes.js
-const axios = require("axios");
 const { v4: uuidv4 } = require("uuid");
+const { enviarEvento } = require("./distribuidorEventos");
 
 // Armazena as observações agrupadas pelo ID do lembrete
 const observacoesPorLembreteId = {};
 
-// Define funções associadas a tipos de eventos recebidos
+
 const funcoes = {
   ObservacaoClassificada: (observacao) => {
     const observacoes = observacoesPorLembreteId[observacao.lembreteId];
@@ -16,8 +16,7 @@ const funcoes = {
 
     obsParaAtualizar.status = observacao.status;
 
-    // Notifica o barramento de eventos sobre a atualização
-    axios.post("http://localhost:10000/eventos", {
+    enviarEvento({
       tipo: "ObservacaoAtualizada",
       dados: {
         id: observacao.id,
@@ -25,11 +24,11 @@ const funcoes = {
         lembreteId: observacao.lembreteId,
         status: observacao.status
       }
-    }).catch(err => console.error("Erro ao enviar evento:", err.message));
+    });
   }
 };
 
-// Cria uma nova observação associada a um lembrete
+// Cria uma nova observação
 async function criarObservacao(lembreteId, texto) {
   const idObs = uuidv4();
   const observacoesDoLembrete = observacoesPorLembreteId[lembreteId] || [];
@@ -38,24 +37,23 @@ async function criarObservacao(lembreteId, texto) {
   observacoesDoLembrete.push(novaObservacao);
   observacoesPorLembreteId[lembreteId] = observacoesDoLembrete;
 
-  // Envia o evento de criação para o barramento
-  await axios.post("http://localhost:10000/eventos", {
+  await enviarEvento({
     tipo: "ObservacaoCriada",
     dados: { id: idObs, texto, lembreteId, status: "aguardando" }
-  }).catch(err => console.error("Erro ao enviar evento:", err.message));
+  });
 
   return observacoesDoLembrete;
 }
 
-// Retorna todas as observações de um lembrete específico
+// Lista observações de um lembrete
 function listarObservacoes(lembreteId) {
   return observacoesPorLembreteId[lembreteId] || [];
 }
 
-// Processa eventos recebidos do barramento
+// Processa evento recebido
 function processarEvento(tipo, dados) {
   const funcao = funcoes[tipo];
   if (funcao) funcao(dados);
 }
 
-module.exports = { observacoesPorLembreteId,criarObservacao, listarObservacoes, processarEvento };
+module.exports = { observacoesPorLembreteId, criarObservacao, listarObservacoes, processarEvento };

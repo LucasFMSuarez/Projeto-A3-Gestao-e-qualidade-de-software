@@ -1,24 +1,20 @@
 // src/routes.js
 const express = require("express");
-const {
-  criarObservacao,
-  listarObservacoes,
-  processarEvento
-} = require("./servicoObservacoes");
+const { criarObservacao, listarObservacoes, processarEvento } = require("./servicoObservacoes");
 
 const router = express.Router();
 
-// Cria uma nova observação para um lembrete específico
+// Cria nova observação
 router.put("/lembretes/:id/observacoes", async (req, res) => {
   try {
     const observacoes = await criarObservacao(req.params.id, req.body.texto);
     res.status(201).send(observacoes);
-  } catch (err) {
+  } catch {
     res.status(500).send({ erro: "Erro ao criar observação." });
   }
 });
 
-// Lista todas as observações de um lembrete
+// Lista observações
 router.get("/lembretes/:id/observacoes", (req, res) => {
   const observacoes = listarObservacoes(req.params.id);
   res.send(observacoes);
