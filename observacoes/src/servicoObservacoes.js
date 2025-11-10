@@ -58,4 +58,4 @@ function processarEvento(tipo, dados) {
   if (funcao) funcao(dados);
 }
 
-module.exports = { criarObservacao, listarObservacoes, processarEvento };
+module.exports = { observacoesPorLembreteId,criarObservacao, listarObservacoes, processarEvento };
