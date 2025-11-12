@@ -30,10 +30,13 @@ describe("Serviço de Lembretes", () => {
       texto: "Teste",
       status: "aguardando"
     });
-    expect(enviarEvento).toHaveBeenCalledWith({
-      tipo: "LembreteCriado",
-      dados: fakeLembrete
-    });
+
+    // Ajustado para o formato enviarEvento(tipo, dados)
+    expect(enviarEvento).toHaveBeenCalledWith(
+      "LembreteCriado",
+      fakeLembrete
+    );
+
     expect(result).toEqual(fakeLembrete);
   });
 
@@ -53,9 +56,11 @@ describe("Serviço de Lembretes", () => {
 
     expect(lembrete.status).toBe("feito");
     expect(lembrete.save).toHaveBeenCalled();
-    expect(enviarEvento).toHaveBeenCalledWith({
-      tipo: "LembreteAtualizado",
-      dados: { id: 1, texto: "Teste", status: "feito" }
-    });
+
+    // Também ajustado para o formato enviarEvento(tipo, dados)
+    expect(enviarEvento).toHaveBeenCalledWith(
+      "LembreteAtualizado",
+      { id: 1, texto: "Teste", status: "feito" }
+    );
   });
 });
