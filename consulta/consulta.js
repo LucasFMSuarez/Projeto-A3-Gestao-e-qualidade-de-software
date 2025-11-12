@@ -49,16 +49,18 @@ const funcoes = {
     );
     console.log("Consulta atualizou lembrete:", dados);
   },
-
-  ObservacaoCriada: async (dados) => {
-    await Observacao.create({
-      id: dados.id,
+ObservacaoCriada: async (dados) => {
+  await Observacao.findOneAndUpdate(
+    { id: dados.id },       // Procura pela observação pelo id
+    {
       texto: dados.texto,
       status: dados.status,
       lembreteId: dados.lembreteId
-    });
-    console.log("Consulta armazenou observação:", dados);
-  },
+    },
+    { upsert: true, new: true } // Cria se não existir
+  );
+  console.log("Consulta armazenou/atualizou observação:", dados);
+},
 
   ObservacaoAtualizada: async (dados) => {
     await Observacao.findOneAndUpdate(

@@ -18,5 +18,5 @@ const ObservacaoSchema = new mongoose.Schema({
     default: "aguardando"
   }
 });
-
+ObservacaoSchema.index({ lembreteId: 1, texto: 1 }, { unique: true });
 module.exports = mongoose.model("Observacao", ObservacaoSchema);

@@ -19,7 +19,7 @@ async function criarObservacao(lembreteId, texto) {
     status: "aguardando",
   });
 
-  return await listarObservacoes(lembreteId);
+    return nova;
 }
 
 async function listarObservacoes(lembreteId) {
@@ -47,9 +47,9 @@ const funcoes = {
   }
 };
 
-function processarEvento(tipo, dados) {
+async function processarEvento(tipo, dados) {
   const fn = funcoes[tipo];
-  if (fn) fn(dados);
+  if (fn) await fn(dados);
 }
 
 module.exports = {

@@ -11,12 +11,10 @@ const {
 router.put("/lembretes/:id/observacoes", async (req, res) => {
   try {
     const { texto } = req.body;
-    if (!texto) {
-      return res.status(400).send({ erro: "O campo 'texto' é obrigatório." });
-    }
+    if (!texto) return res.status(400).send({ erro: "O campo 'texto' é obrigatório." });
 
-    const observacoes = await criarObservacao(req.params.id, texto);
-    res.status(201).send(observacoes);
+    const observacao = await criarObservacao(req.params.id, texto);
+    res.status(201).send(observacao); // retorna somente a nova observação
   } catch (err) {
     console.error("Erro ao criar observação:", err);
     res.status(500).send({ erro: "Erro ao criar observação." });
@@ -43,7 +41,7 @@ router.post("/eventos", async (req, res) => {
       return res.status(400).send({ erro: "Evento sem tipo" });
     }
 
-    processarEvento(tipo, dados);
+    await processarEvento(tipo, dados);
     res.send({ msg: "ok" });
   } catch (err) {
     console.error("Erro ao processar evento:", err);

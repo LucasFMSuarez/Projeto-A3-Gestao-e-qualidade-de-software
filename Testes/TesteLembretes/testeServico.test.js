@@ -1,28 +1,61 @@
-const { criarLembrete, listarLembretes } = require('../../lembretes/src/servicoLembretes');
-const { enviarEvento } = require('../../lembretes/src/distribuidorEventos')
+const { criarLembrete, listarLembretes, processarEvento } = require("../../lembretes/src/servicoLembretes");
+const Lembrete = require("../../banco/lembreteModel");
+const { enviarEvento } = require("../../lembretes/src/distribuidorEventos");
 
-jest.mock('../../lembretes/src/distribuidorEventos')
+jest.mock("../../lembretes/src/distribuidorEventos", () => ({
+  enviarEvento: jest.fn()
+}));
+
+jest.mock("../../banco/lembreteModel", () => ({
+  findOne: jest.fn(() => ({
+    sort: jest.fn(() => ({ lean: jest.fn().mockResolvedValue(null) }))
+  })),
+  create: jest.fn(),
+  find: jest.fn()
+}));
 
 describe("Serviço de Lembretes", () => {
   beforeEach(() => {
-    enviarEvento.mockClear();
+    jest.clearAllMocks();
   });
 
-  test("criarLembrete deve criar um lembrete e chamar enviarEvento", async () => {
-    enviarEvento.mockResolvedValueOnce();
+  test("criarLembrete cria um lembrete e envia evento", async () => {
+    const fakeLembrete = { id: 1, texto: "Teste", status: "aguardando" };
+    Lembrete.create.mockResolvedValue(fakeLembrete);
 
-    const resultado = await criarLembrete("Estudar Node");
+    const result = await criarLembrete("Teste");
 
-    expect(resultado).toEqual({ contador: 1, texto: "Estudar Node" });
-
-    expect(enviarEvento).toHaveBeenCalledWith("LembreteCriado", {
-      contador: 1,
-      texto: "Estudar Node",
+    expect(Lembrete.create).toHaveBeenCalledWith({
+      id: 1,
+      texto: "Teste",
+      status: "aguardando"
     });
+    expect(enviarEvento).toHaveBeenCalledWith({
+      tipo: "LembreteCriado",
+      dados: fakeLembrete
+    });
+    expect(result).toEqual(fakeLembrete);
   });
 
-  test("listarLembretes deve retornar os existentes", async () => {
-    const todos = listarLembretes();
-    expect(todos[1]).toEqual({ contador: 1, texto: "Estudar Node" });
+  test("listarLembretes retorna lista", async () => {
+    const fakeList = [{ id: 1, texto: "Teste" }];
+    Lembrete.find.mockResolvedValue(fakeList);
+
+    const result = await listarLembretes();
+    expect(result).toEqual(fakeList);
+  });
+
+  test("processarEvento atualiza status quando recebe LembreteClassificado", async () => {
+    const lembrete = { id: 1, texto: "Teste", status: "aguardando", save: jest.fn() };
+    Lembrete.findOne.mockResolvedValue(lembrete);
+
+    await processarEvento("LembreteClassificado", { id: 1, status: "feito" });
+
+    expect(lembrete.status).toBe("feito");
+    expect(lembrete.save).toHaveBeenCalled();
+    expect(enviarEvento).toHaveBeenCalledWith({
+      tipo: "LembreteAtualizado",
+      dados: { id: 1, texto: "Teste", status: "feito" }
+    });
   });
 });

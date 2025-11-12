@@ -28,16 +28,16 @@ router.put("/lembretes", async (req, res) => {
 // Recebe eventos do barramento
 router.post("/eventos", async (req, res) => {
   const { tipo, dados } = req.body;
-
-  console.log("📥 Lembretes recebeu evento:", tipo, dados);
+  console.log("Lembretes recebeu evento:", tipo, dados);
 
   try {
-    processarEvento(tipo, dados);
+    await processarEvento(tipo, dados); // ✅ espera a atualização
     res.status(200).send({ msg: "ok" });
   } catch (err) {
     console.error("Erro ao processar evento:", err);
     res.status(500).send({ erro: "Erro ao processar evento." });
   }
 });
+
 
 module.exports = router;
