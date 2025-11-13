@@ -13,7 +13,7 @@ describe("Integração — Serviço de Observações", () => {
   });
 
   test("Fluxo completo: criar observação → classificar → atualizar", async () => {
-    // 1️⃣ Criar observação
+    //  Criar observação
     const fakeObs = {
       id: "1",
       texto: "Teste",
@@ -34,7 +34,7 @@ describe("Integração — Serviço de Observações", () => {
     expect(criada).toEqual(fakeObs);
     expect(enviarEvento).toHaveBeenCalledWith("ObservacaoCriada", expect.any(Object));
 
-    // 2️⃣ Processar evento de classificação
+    //  Processar evento de classificação
     await servico.processarEvento("ObservacaoClassificada", { id: "1", status: "feito" });
 
     expect(fakeObs.status).toBe("feito");
@@ -44,7 +44,7 @@ describe("Integração — Serviço de Observações", () => {
       status: "feito"
     }));
 
-    // 3️⃣ Listar observações
+    //  Listar observações
     const lista = await servico.listarObservacoes("100");
     expect(lista).toEqual([fakeObs]);
   });

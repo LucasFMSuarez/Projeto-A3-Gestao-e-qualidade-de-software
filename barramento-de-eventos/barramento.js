@@ -27,7 +27,7 @@ app.post('/eventos', async (req, res) => {
     console.log("Evento inválido recebido:", evento);
     return res.status(400).send({ erro: "Evento inválido: faltando 'tipo'" });
   }
-  console.log("✅ Evento recebido:", evento);
+  console.log(" Evento recebido:", evento);
   eventos.push(evento);
 
 

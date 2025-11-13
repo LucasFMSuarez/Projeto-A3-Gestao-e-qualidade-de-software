@@ -31,7 +31,7 @@ router.post("/eventos", async (req, res) => {
   console.log("Lembretes recebeu evento:", tipo, dados);
 
   try {
-    await processarEvento(tipo, dados); // ✅ espera a atualização
+    await processarEvento(tipo, dados); //  espera a atualização
     res.status(200).send({ msg: "ok" });
   } catch (err) {
     console.error("Erro ao processar evento:", err);

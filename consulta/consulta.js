@@ -7,7 +7,7 @@ const Observacao = require("../banco/observacaoModel");
 const app = express();
 app.use(express.json());
 
-mongoose.connect("mongodb+srv://luizwashingtonmuraro:L11272615@a3.cngehuq.mongodb.net/?appName=A3", {
+mongoose.connect("coloque seu banco", {
   useNewUrlParser: true,
   useUnifiedTopology: true
 });

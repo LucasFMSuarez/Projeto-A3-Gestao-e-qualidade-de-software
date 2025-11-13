@@ -36,7 +36,7 @@ router.get("/lembretes/:id/observacoes", async (req, res) => {
 router.post("/eventos", async (req, res) => {
   try {
     const { tipo, dados } = req.body;
-     console.log("📥 Observações recebeu:", tipo, dados);
+     console.log(" Observações recebeu:", tipo, dados);
     if (!tipo) {
       return res.status(400).send({ erro: "Evento sem tipo" });
     }

@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 
 async function conectarBanco() {
   try {
-    await mongoose.connect("mongodb+srv://luizwashingtonmuraro:L11272615@a3.cngehuq.mongodb.net/?appName=A3", {
+    await mongoose.connect("coloque seu banco", {
       useNewUrlParser: true,
       useUnifiedTopology: true
     });
