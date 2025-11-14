@@ -4,7 +4,7 @@
   "main": "consulta.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node consulta.js"
+    "start": "node src/server.js"
   },
   "keywords": [],
   "author": "",
