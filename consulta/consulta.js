@@ -7,7 +7,7 @@ const Observacao = require("../banco/observacaoModel");
 const app = express();
 app.use(express.json());
 
-mongoose.connect("mongodb://localhost:27017/a3", {
+mongoose.connect("", {
   useNewUrlParser: true,
   useUnifiedTopology: true
 });
