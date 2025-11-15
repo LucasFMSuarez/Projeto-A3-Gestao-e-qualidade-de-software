@@ -40,6 +40,25 @@ const funcoes = {
     );
     console.log("Consulta atualizou observação:", dados);
   },
+
+  //  LembreteExcluido → apaga lembrete e observações
+  LembreteExcluido: async (dados) => {
+    const { id } = dados;
+
+    await Lembrete.findOneAndDelete({ id });
+    await Observacao.deleteMany({ lembreteId: id });
+
+    console.log("Consulta excluiu lembrete e observações:", id);
+  },
+
+  //  ObservacaoExcluida → apaga só a observação
+  ObservacaoExcluida: async (dados) => {
+    const { id } = dados;
+
+    await Observacao.findOneAndDelete({ id });
+
+    console.log("Consulta excluiu observação:", id);
+  },
 };
 
 async function processarEvento(tipo, dados) {
@@ -48,7 +67,7 @@ async function processarEvento(tipo, dados) {
   if (fn) {
     await fn(dados);
   } else {
-    console.log("⚠ Consulta ignorou tipo:", tipo);
+    console.log(" Consulta ignorou tipo:", tipo);
   }
 }
 

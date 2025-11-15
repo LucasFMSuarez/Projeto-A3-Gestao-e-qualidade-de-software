@@ -1,6 +1,8 @@
 // src/routes.js
 const express = require("express");
+const axios = require("axios");
 const router = express.Router();
+
 const {
   criarObservacao,
   listarObservacoes,
@@ -48,5 +50,24 @@ router.post("/eventos", async (req, res) => {
     res.status(500).send({ erro: "Erro ao processar evento." });
   }
 });
+
+// Excluir observação
+router.delete("/observacoes/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    // Evento para o barramento
+    await axios.post("http://localhost:10000/eventos", {
+      tipo: "ObservacaoExcluida",
+      dados: { id }
+    });
+
+    res.send({ msg: "Observação excluída (evento enviado ao barramento)" });
+  } catch (err) {
+    console.error("Erro ao excluir observação:", err);
+    res.status(500).send({ erro: "Erro ao excluir observação." });
+  }
+});
+
 
 module.exports = router;

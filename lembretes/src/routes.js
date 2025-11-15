@@ -1,4 +1,6 @@
 const express = require("express");
+const axios = require("axios");
+
 const { criarLembrete, listarLembretes, processarEvento } = require("./servicoLembretes");
 
 const router = express.Router();
@@ -36,6 +38,24 @@ router.post("/eventos", async (req, res) => {
   } catch (err) {
     console.error("Erro ao processar evento:", err);
     res.status(500).send({ erro: "Erro ao processar evento." });
+  }
+});
+
+// Excluir lembrete
+router.delete("/lembretes/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    // Enviar evento para excluir (quem vai realmente apagar é o serviço consulta)
+    await axios.post("http://localhost:10000/eventos", {
+      tipo: "LembreteExcluido",
+      dados: { id }
+    });
+
+    res.send({ msg: "Lembrete excluído (evento enviado ao barramento)" });
+  } catch (err) {
+    console.error("Erro ao excluir lembrete:", err);
+    res.status(500).send({ erro: "Erro ao excluir lembrete." });
   }
 });
 
