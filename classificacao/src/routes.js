@@ -8,7 +8,7 @@ router.post("/eventos", async (req, res) => {
   try {
     let tipo, dados;
 
-    // aceitar os dois formatos que seu barramento pode enviar
+    // aceita os dois formatos que o nosso barramento envia
     if (req.body.tipo && typeof req.body.tipo === "object") {
       tipo = req.body.tipo.tipo;
       dados = req.body.tipo.dados;

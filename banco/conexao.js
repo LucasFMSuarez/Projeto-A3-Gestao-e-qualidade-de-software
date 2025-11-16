@@ -1,16 +1,28 @@
 // banco/conexao.js
 const mongoose = require("mongoose");
 
-async function conectarBanco() {
-  try {
-    await mongoose.connect("coloque o banco aqui por favor", {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    });
-    console.log(" MongoDB conectado com sucesso!");
-  } catch (err) {
-    console.error(" Erro ao conectar no MongoDB:", err);
+// Classe POO 
+class Database {
+  constructor(url) {
+    this.url = url;
+  }
+
+  async conectar() {
+    try {
+      await mongoose.connect(this.url, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true
+      });
+      console.log(" MongoDB conectado com sucesso!");
+    } catch (err) {
+      console.error(" Erro ao conectar no MongoDB:", err);
+    }
   }
 }
 
-module.exports = conectarBanco;
+const db = new Database(
+  "mongodb://localhost:27017/a3"
+);
+
+// Exporta a função db
+module.exports = () => db.conectar();

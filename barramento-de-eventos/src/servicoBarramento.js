@@ -1,33 +1,37 @@
 // barramento/src/servicoBarramento.js
 const axios = require("axios");
 
-// Array para armazenar eventos
-const eventos = [];
+// Classe 
+class BarramentoService {
+  constructor() {
+    this.eventos = [];
+  }
 
-// Envia evento para o barramento
-async function enviarEvento(url, evento) {
-  try {
-    await axios.post(url, evento, {
-      headers: { "Content-Type": "application/json" },
-      timeout: 5000
-    });
-  } catch (error) {
-    console.error(`Erro enviando evento para ${url}: ${error.message}`);
+  async enviarEvento(url, evento) {
+    try {
+      await axios.post(url, evento, {
+        headers: { "Content-Type": "application/json" },
+        timeout: 5000
+      });
+    } catch (error) {
+      console.error(`Erro enviando evento para ${url}: ${error.message}`);
+    }
+  }
+
+  armazenarEvento(evento) {
+    this.eventos.push(evento);
+  }
+
+  listarEventos() {
+    return this.eventos;
   }
 }
 
-// Adiciona evento localmente
-function armazenarEvento(evento) {
-  eventos.push(evento);
-}
+const barramento = new BarramentoService();
 
-// Retorna todos os eventos
-function listarEventos() {
-  return eventos;
-}
-
+// Exportamos as funções 
 module.exports = {
-  enviarEvento,
-  armazenarEvento,
-  listarEventos
+  enviarEvento: (url, evento) => barramento.enviarEvento(url, evento),
+  armazenarEvento: (evento) => barramento.armazenarEvento(evento),
+  listarEventos: () => barramento.listarEventos()
 };

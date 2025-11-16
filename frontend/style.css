@@ -1,0 +1,142 @@
+/* ==== RESET ==== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter", Arial, sans-serif;
+}
+
+/* ==== BODY ==== */
+body {
+  background: #eef1f5;
+  padding: 30px;
+}
+
+/* ==== TÍTULO ==== */
+h1 {
+  text-align: center;
+  font-size: 32px;
+  margin-bottom: 25px;
+  color: #2c3e50;
+}
+
+/* ==== FORM PRINCIPAL ==== */
+form {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+input {
+  padding: 10px;
+  width: 330px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: #fff;
+}
+
+/* ==== BOTÕES ==== */
+button {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.15s ease;
+}
+
+/* Botão importante */
+button.important {
+  background: #ffdd57;
+}
+button.important:hover {
+  background: #f1c40f;
+}
+button.important.active {
+  background: #d35400;
+  color: white;
+}
+
+/* Botão adicionar */
+button[type="submit"] {
+  background: #3498db;
+  color: white;
+}
+button[type="submit"]:hover {
+  background: #2980b9;
+}
+
+/* ==== LISTA ==== */
+ul {
+  list-style: none;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+/* ==== CARTÃO DE LEMBRETE ==== */
+li {
+  background: #fff;
+  padding: 16px;
+  margin-bottom: 15px;
+  border-radius: 12px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+}
+
+/* Título do lembrete */
+li strong {
+  font-size: 18px;
+  color: #2c3e50;
+}
+
+/* TAG DE IMPORTANTE */
+.tag {
+  margin-left: 10px;
+  padding: 3px 10px;
+  background: #f1c40f;
+  border-radius: 6px;
+  color: #000;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* ==== BOTÕES DENTRO DO CARD ==== */
+button.delete,
+button.addObs {
+  margin-left: 10px;
+  padding: 7px 12px;
+  border-radius: 6px;
+}
+
+button.delete {
+  background: #e74c3c;
+  color: white;
+}
+button.delete:hover {
+  background: #c0392b;
+}
+
+button.addObs {
+  background: #3498db;
+  color: white;
+}
+button.addObs:hover {
+  background: #2980b9;
+}
+
+/* ==== OBSERVAÇÕES ==== */
+.observacoes {
+  margin-top: 15px;
+  padding-left: 12px;
+  border-left: 3px solid #dcdcdc;
+}
+
+.observacoes p {
+  background: #f9f9f9;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}

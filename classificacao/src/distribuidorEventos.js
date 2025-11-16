@@ -9,7 +9,6 @@ async function enviarEvento(tipo, dados) {
     });
   } catch (err) {
     console.error("Erro ao enviar evento (classificação):", err.message);
-    // não lança para não quebrar o serviço
   }
 }
 
