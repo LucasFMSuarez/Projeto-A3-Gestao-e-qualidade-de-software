@@ -10,8 +10,6 @@ class Database {
   async conectar() {
     try {
       await mongoose.connect(this.url, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true
       });
       console.log(" MongoDB conectado com sucesso!");
     } catch (err) {

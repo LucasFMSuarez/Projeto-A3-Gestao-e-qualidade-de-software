@@ -2,53 +2,44 @@ const { criarLembrete, listarLembretes, processarEvento } = require("../../lembr
 const Lembrete = require("../../banco/lembreteModel");
 const { enviarEvento } = require("../../lembretes/src/distribuidorEventos");
 
+// Mock dos eventos
 jest.mock("../../lembretes/src/distribuidorEventos", () => ({
   enviarEvento: jest.fn()
 }));
 
+// Mock do model Lembrete
 jest.mock("../../banco/lembreteModel", () => ({
-  findOne: jest.fn(() => ({
-    sort: jest.fn(() => ({ lean: jest.fn().mockResolvedValue(null) }))
-  })),
   create: jest.fn(),
-  find: jest.fn()
+  find: jest.fn(),
+  findOne: jest.fn(() => ({
+    sort: jest.fn(() => ({
+      lean: jest.fn().mockResolvedValue(null)
+    }))
+  }))
 }));
 
 describe("Serviço de Lembretes", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+  beforeEach(() => jest.clearAllMocks());
 
   test("criarLembrete cria um lembrete e envia evento", async () => {
-    const fakeLembrete = { id: 1, texto: "Teste", status: "aguardando" };
-    Lembrete.create.mockResolvedValue(fakeLembrete);
+    const fake = { id: 1, texto: "Teste", status: "aguardando" };
+    Lembrete.create.mockResolvedValue(fake);
 
     const result = await criarLembrete("Teste");
 
-    expect(Lembrete.create).toHaveBeenCalledWith({
-      id: 1,
-      texto: "Teste",
-      status: "aguardando"
-    });
-
-    // Ajustado para o formato enviarEvento(tipo, dados)
-    expect(enviarEvento).toHaveBeenCalledWith(
-      "LembreteCriado",
-      fakeLembrete
-    );
-
-    expect(result).toEqual(fakeLembrete);
+    expect(Lembrete.create).toHaveBeenCalledWith(fake);
+    expect(enviarEvento).toHaveBeenCalledWith("LembreteCriado", fake);
+    expect(result).toEqual(fake);
   });
 
   test("listarLembretes retorna lista", async () => {
-    const fakeList = [{ id: 1, texto: "Teste" }];
-    Lembrete.find.mockResolvedValue(fakeList);
+    const lista = [{ id: 1, texto: "Teste" }];
+    Lembrete.find.mockResolvedValue(lista);
 
-    const result = await listarLembretes();
-    expect(result).toEqual(fakeList);
+    expect(await listarLembretes()).toEqual(lista);
   });
 
-  test("processarEvento atualiza status quando recebe LembreteClassificado", async () => {
+  test("processarEvento atualiza e reenviar evento", async () => {
     const lembrete = { id: 1, texto: "Teste", status: "aguardando", save: jest.fn() };
     Lembrete.findOne.mockResolvedValue(lembrete);
 
@@ -57,10 +48,10 @@ describe("Serviço de Lembretes", () => {
     expect(lembrete.status).toBe("feito");
     expect(lembrete.save).toHaveBeenCalled();
 
-    // Também ajustado para o formato enviarEvento(tipo, dados)
-    expect(enviarEvento).toHaveBeenCalledWith(
-      "LembreteAtualizado",
-      { id: 1, texto: "Teste", status: "feito" }
-    );
+    expect(enviarEvento).toHaveBeenCalledWith("LembreteAtualizado", {
+      id: 1,
+      texto: "Teste",
+      status: "feito"
+    });
   });
 });
