@@ -18,6 +18,7 @@ class Database {
   }
 }
 
+// Banco de Dados - Endereço MongoDB
 const db = new Database(
   "mongodb://localhost:27017/a3"
 );
