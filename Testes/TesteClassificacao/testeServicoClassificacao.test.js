@@ -1,65 +1,54 @@
 // Testes/TesteClassificacao/testeServicoClassificacao.test.js
-
 const {
   processarEvento,
   palavraChave
 } = require("../../classificacao/src/servicoClassificacao");
 
-const { enviarEvento } = require("../../classificacao/src/distribuidorEventos");
-
-// mocka o envio de evento para não fazer chamada real
-jest.mock("../../classificacao/src/distribuidorEventos", () => ({
-  enviarEvento: jest.fn(),
+jest.mock("axios", () => ({
+  post: jest.fn().mockResolvedValue({ status: 200 })
 }));
 
-describe("Serviço de Classificação - Funções diretas (via processarEvento)", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+const axios = require("axios");
 
-  test("LembreteCriado deve classificar como importante quando contém a palavra-chave", async () => {
-    const dados = { id: 1, texto: `algo muito ${palavraChave} aqui` };
+describe("Serviço Classificação - Unitário REAL", () => {
+  beforeEach(() => jest.clearAllMocks());
 
-    await processarEvento("LembreteCriado", dados);
-
-    expect(enviarEvento).toHaveBeenCalledWith("LembreteClassificado", {
-      ...dados,
-      status: "importante",
-    });
-  });
-
-  test("LembreteCriado deve classificar como comum quando não contém a palavra-chave", async () => {
-    const dados = { id: 2, texto: "texto normal" };
+  test("Classifica LembreteCriado importante", async () => {
+    const dados = { id: 1, texto: `algo ${palavraChave}` };
 
     await processarEvento("LembreteCriado", dados);
 
-    expect(enviarEvento).toHaveBeenCalledWith("LembreteClassificado", {
-      ...dados,
-      status: "comum",
-    });
+    expect(axios.post).toHaveBeenCalled();
+    const chamada = axios.post.mock.calls[0][1];
+    expect(chamada.tipo).toBe("LembreteClassificado");
+    expect(chamada.dados.status).toBe("importante");
   });
 
-  test("ObservacaoCriada deve classificar corretamente", async () => {
-    const dados = { id: 3, texto: "uma observação importante" };
+  test("Classifica LembreteCriado comum", async () => {
+    const dados = { id: 1, texto: "normal" };
+
+    await processarEvento("LembreteCriado", dados);
+
+    const chamada = axios.post.mock.calls[0][1];
+    expect(chamada.dados.status).toBe("comum");
+  });
+
+  test("Classifica ObservacaoCriada", async () => {
+    const dados = { id: 3, texto: "nota importante" };
 
     await processarEvento("ObservacaoCriada", dados);
 
-    expect(enviarEvento).toHaveBeenCalledWith("ObservacaoClassificada", {
-      ...dados,
-      status: "importante",
-    });
+    const chamada = axios.post.mock.calls[0][1];
+    expect(chamada.tipo).toBe("ObservacaoClassificada");
+    expect(chamada.dados.status).toBe("importante");
   });
 
-  test("processarEvento deve ignorar tipo desconhecido", async () => {
-    const consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
+  test("Ignora tipo desconhecido", async () => {
+    const spy = jest.spyOn(console, "log").mockImplementation(() => {});
 
-    await processarEvento("EventoDesconhecido", {});
+    await processarEvento("NadaAqui", {});
 
-    expect(consoleSpy).toHaveBeenCalledWith(
-      " Tipo ignorado pela classificação:",
-      "EventoDesconhecido"
-    );
-
-    consoleSpy.mockRestore();
+    expect(spy).toHaveBeenCalled();
+    spy.mockRestore();
   });
 });

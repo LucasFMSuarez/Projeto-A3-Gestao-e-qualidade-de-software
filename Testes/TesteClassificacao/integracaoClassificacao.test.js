@@ -1,36 +1,53 @@
 // Testes/TesteClassificacao/integracaoClassificacao.test.js
 const request = require("supertest");
 const app = require("../../classificacao/src/server");
-const { enviarEvento } = require("../../classificacao/src/distribuidorEventos");
 
-jest.mock("../../classificacao/src/distribuidorEventos", () => ({
-  enviarEvento: jest.fn(),
+jest.mock("axios", () => ({
+  post: jest.fn().mockResolvedValue({ status: 200 })
 }));
 
-describe("Integração - Serviço Classificação", () => {
+const axios = require("axios");
+
+describe("Integração REAL - Serviço de Classificação", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  test("Fluxo completo de classificação de Lembrete", async () => {
-    const evento = { tipo: "LembreteCriado", dados: { texto: "tarefa importante" } };
+  test("Classifica LembreteCriado e envia evento correto", async () => {
+    const evento = {
+      tipo: "LembreteCriado",
+      dados: { texto: "algo muito importante" }
+    };
+
     const res = await request(app).post("/eventos").send(evento);
 
     expect(res.statusCode).toBe(200);
-    expect(enviarEvento).toHaveBeenCalledWith("LembreteClassificado", {
-      texto: "tarefa importante",
-      status: "importante",
-    });
+
+    expect(axios.post).toHaveBeenCalledWith(
+      "http://localhost:10000/eventos",
+      {
+        tipo: "LembreteClassificado",
+        dados: { texto: "algo muito importante", status: "importante" }
+      }
+    );
   });
 
-  test("Fluxo completo de classificação de Observação", async () => {
-    const evento = { tipo: "ObservacaoCriada", dados: { texto: "anotação comum" } };
+  test("Classifica ObservacaoCriada e envia evento correto", async () => {
+    const evento = {
+      tipo: "ObservacaoCriada",
+      dados: { texto: "teste comum" }
+    };
+
     const res = await request(app).post("/eventos").send(evento);
 
     expect(res.statusCode).toBe(200);
-    expect(enviarEvento).toHaveBeenCalledWith("ObservacaoClassificada", {
-      texto: "anotação comum",
-      status: "comum",
-    });
+
+    expect(axios.post).toHaveBeenCalledWith(
+      "http://localhost:10000/eventos",
+      {
+        tipo: "ObservacaoClassificada",
+        dados: { texto: "teste comum", status: "comum" }
+      }
+    );
   });
 });
